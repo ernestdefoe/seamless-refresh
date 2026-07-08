@@ -1,0 +1,44 @@
+{
+  "name": "ernestdefoe/seamless-refresh",
+  "description": "Replaces Flarum's \"a new version of this page is available — reload\" prompt with a seamless refresh: when the assets change, the next navigation quietly picks them up, so a reading or typing user is never interrupted.",
+  "keywords": ["flarum", "flarum-extension", "refresh", "assets", "ux"],
+  "type": "flarum-extension",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "ernestdefoe",
+      "email": "ernestdefoe@gmail.com"
+    }
+  ],
+  "homepage": "https://github.com/ernestdefoe/seamless-refresh",
+  "support": {
+    "issues": "https://github.com/ernestdefoe/seamless-refresh/issues",
+    "source": "https://github.com/ernestdefoe/seamless-refresh"
+  },
+  "require": {
+    "flarum/core": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ErnestDefoe\\SeamlessRefresh\\": "src/"
+    }
+  },
+  "extra": {
+    "flarum-extension": {
+      "title": "Seamless Refresh",
+      "category": "feature",
+      "icon": {
+        "name": "fas fa-arrows-rotate",
+        "backgroundColor": "#5b5bd6",
+        "color": "#fff"
+      }
+    },
+    "flarum-cli": {
+      "modules": {
+        "js": true
+      }
+    }
+  },
+  "minimum-stability": "beta",
+  "prefer-stable": true
+}
