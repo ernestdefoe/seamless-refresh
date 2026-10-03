@@ -1,56 +1,60 @@
-# Seamless Refresh for Flarum
+# Seamless Refresh
 
-When Flarum's assets are rebuilt (a deploy, an extension toggle), the running page
-notices — every API response carries an `X-Flarum-Assets-Revision` header, and if it
-differs from the one the page booted with, Flarum pops up a dismissible
+Stop Flarum telling your members to reload. When the forum's assets change,
+the next page they open quietly picks up the new version, and nothing
+interrupts them while they read or type.
 
-> **A new version of this page is available.** [Reload]
+![Without Seamless Refresh: Flarum core's yellow "A newer version of this page is available. Reload" alert across the page](screenshots/without.png)
 
-That alert appears **immediately**, right in the middle of whatever you were reading or
-typing. On a busy forum whose assets change often, it can feel like it's constantly
-nagging you to reload.
+*Without Seamless Refresh. This is the alert it replaces.*
 
-**Seamless Refresh** takes a gentler approach, proposed by [luceos on the Flarum
-tracker](https://github.com/flarum/framework): when newer assets are detected, it
-**doesn't interrupt you at all** — it just quietly remembers. The **next time you
-actually navigate** — click a link, open a discussion, use back/forward — the browser
-does a normal full page load of that destination, so the fresh assets come along for the
-ride. No modal, no timing guesswork, no risk of wiping a draft.
+When Flarum's assets are rebuilt (a deploy, an extension switched on or off),
+every API response carries a new `X-Flarum-Assets-Revision` header. Core
+notices it differs from the one the page loaded with and shows that alert
+straight away, in the middle of whatever you were doing. On a busy forum whose
+assets change often, it feels like it's always asking you to reload.
 
-- **Never interrupts** a reading or typing user — nothing appears mid-session.
-- **Always up to date** — your very next navigation is already on the new assets.
-- **Zero configuration** — enable it and you're done.
-- **No backend** — it only changes how the frontend reacts to the revision header Flarum
-  already sends.
+Seamless Refresh takes the gentler approach
+[luceos](https://github.com/luceos) proposed on the Flarum tracker:
 
-## How it works
+- **Never interrupts.** When newer assets are detected, nothing appears. It just remembers.
+- **Up to date on the next click.** The next time you navigate (follow a link, open a discussion, go back or forward), the browser does a normal full page load of where you were going, so the new assets come with it.
+- **Leaves drafts alone.** Only a real navigation triggers the refresh, and the browser's own "unsaved changes" guard still protects an open composer.
+- **No backend.** It only changes how the forum reacts to the header Flarum already sends.
 
-Flarum core detects the new revision in `ForumApplication.checkAssetsRevision` and shows
-the alert. This extension overrides that method to set a flag instead of alerting, and
-registers a capture-phase click listener: while the flag is set, an internal same-origin
-link click is turned into a full page load (`window.location.assign`) so the destination
-boots with the new assets. Back/forward (`popstate`) reloads too.
+## Settings
 
-It deliberately does **not** touch: modified clicks (Ctrl/⌘/Shift/middle — "open in new
-tab"), `target="_blank"` / `download` links, in-page anchors (`#…`), `javascript:` /
-`mailto:` / `tel:` links, or external links. It also never fires while you're just
-reading or typing — only a real navigation triggers the refresh, and the browser's own
-"unsaved changes" guard still protects an open composer.
+There are none. Enable it and you're done.
 
-## Install
+## Good to know
+
+- **How it works.** It overrides core's `checkAssetsRevision` to set a flag instead of showing the alert, and adds a capture-phase click listener. While the flag is set, a click on an internal, same-origin link becomes a full page load (`window.location.assign`). Back and forward (`popstate`) reload too.
+- **What it leaves alone.** Clicks with a modifier key or a middle button ("open in new tab"), `target="_blank"` and `download` links, in-page anchors (`#…`), `javascript:`, `mailto:` and `tel:` links, and external links all behave exactly as normal.
+- **Forum only.** The admin panel keeps core's behaviour.
+
+## Installation
 
 ```bash
 composer require ernestdefoe/seamless-refresh
+php flarum cache:clear
 ```
 
-Then enable **Seamless Refresh** in **Admin → Extensions**. There are no settings.
+Then enable **Seamless Refresh** in the admin panel.
+
+## Updating
+
+```bash
+composer update ernestdefoe/seamless-refresh
+php flarum cache:clear
+```
 
 ## Credit
 
-The behaviour is a direct implementation of the "refresh on the next natural interaction"
-idea [luceos](https://github.com/luceos) proposed as a middle ground between *always
-interrupt* and *never warn*. If you like it, it's also being proposed for Flarum core.
+The behaviour is a direct implementation of the "refresh on the next natural
+interaction" idea [luceos](https://github.com/luceos) proposed as a middle
+ground between always interrupting and never warning. It's also being proposed
+for Flarum core.
 
-## License
+## Licence
 
-[MIT](LICENSE.md) © ernestdefoe
+[MIT](LICENSE.md).
