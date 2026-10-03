@@ -1,6 +1,6 @@
 {
   "name": "ernestdefoe/seamless-refresh",
-  "description": "Replaces Flarum's \"a new version of this page is available — reload\" prompt with a seamless refresh: when the assets change, the next navigation quietly picks them up, so a reading or typing user is never interrupted.",
+  "description": "Stop Flarum telling members to reload: new assets are picked up on the next click, and a session that ends under an open page recovers instead of failing every action.",
   "keywords": ["flarum", "flarum-extension", "refresh", "assets", "ux"],
   "type": "flarum-extension",
   "license": "MIT",
