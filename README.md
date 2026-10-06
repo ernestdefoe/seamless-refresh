@@ -74,9 +74,11 @@ interaction" idea [luceos](https://github.com/luceos) proposed as a middle
 ground between always interrupting and never warning. It's also being proposed
 for Flarum core.
 
-## Discuss
+## Support
 
-Questions, ideas and release notes: [Seamless Refresh on discuss.flarum.org](https://discuss.flarum.org/d/39533-seemless-refresh-created-with-ai).
+- **Support forum:** [Seamless Refresh on ernestdefoe.online](https://ernestdefoe.online/d/118)
+- **Flarum community:** [Seamless Refresh on discuss.flarum.org](https://discuss.flarum.org/d/39533-seemless-refresh-created-with-ai)
+- **Bug reports:** [GitHub issues](https://github.com/ernestdefoe/seamless-refresh/issues)
 
 ## Licence
 
