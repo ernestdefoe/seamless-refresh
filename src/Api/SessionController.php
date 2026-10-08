@@ -25,7 +25,7 @@ class SessionController implements RequestHandlerInterface
         $actor = RequestUtil::getActor($request);
 
         return new JsonResponse([
-            'userId'    => $actor->isGuest() ? null : (int) $actor->id,
+            'userId' => $actor->isGuest() ? null : (int) $actor->id,
             'signature' => Signature::of($actor),
         ], 200, ['Cache-Control' => 'private, no-store']);
     }

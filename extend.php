@@ -9,9 +9,9 @@ use Flarum\Extend;
 
 return [
     (new Extend\Frontend('forum'))
-        ->js(__DIR__ . '/js/dist/forum.js'),
+        ->js(__DIR__.'/js/dist/forum.js'),
 
-    new Extend\Locales(__DIR__ . '/locale'),
+    new Extend\Locales(__DIR__.'/locale'),
 
     // The fingerprint the page booted with, to compare against later.
     (new Extend\ApiResource(ForumResource::class))
