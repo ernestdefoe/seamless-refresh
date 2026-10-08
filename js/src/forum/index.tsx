@@ -1,6 +1,7 @@
 import app from 'flarum/forum/app';
 import { override } from 'flarum/common/extend';
 import Button from 'flarum/common/components/Button';
+import type ForumApplication from 'flarum/forum/ForumApplication';
 
 /**
  * Seamless Refresh
@@ -21,7 +22,9 @@ app.initializers.add('ernestdefoe-seamless-refresh', () => {
   // 1. Detect newer assets exactly like core does, but only raise a flag — never
   //    show the alert. (Patch the running app's class prototype — `flarum/forum/
   //    ForumApplication` isn't exposed as an importable module in Flarum 2.)
-  override((app as any).constructor.prototype, 'checkAssetsRevision', function (this: any, _original: unknown, serverRevision: string | null) {
+  const appPrototype: ForumApplication = (app as any).constructor.prototype;
+
+  override(appPrototype, 'checkAssetsRevision', function (this: any, _original: unknown, serverRevision: string | null) {
     const bootedRevision = this.data?.assetsRevision;
 
     if (!serverRevision || !bootedRevision || serverRevision === bootedRevision) {
@@ -132,11 +135,15 @@ app.initializers.add('ernestdefoe-seamless-refresh', () => {
     if (endedAlert !== null) return; // once, not once per failed request
 
     endedAlert = app.alerts.show(
-      { type: 'warning', dismissible: false, controls: [
-        <Button className="Button Button--link" onclick={() => app.modal.show(() => import('flarum/forum/components/LogInModal'))}>
-          {app.translator.trans('ernestdefoe-seamless-refresh.forum.sign_in')}
-        </Button>,
-      ] } as any,
+      {
+        type: 'warning',
+        dismissible: false,
+        controls: [
+          <Button className="Button Button--link" onclick={() => app.modal.show(() => import('flarum/forum/components/LogInModal'))}>
+            {app.translator.trans('ernestdefoe-seamless-refresh.forum.sign_in')}
+          </Button>,
+        ],
+      } as any,
       app.translator.trans('ernestdefoe-seamless-refresh.forum.session_ended')
     );
   };
@@ -171,29 +178,33 @@ app.initializers.add('ernestdefoe-seamless-refresh', () => {
     return (error?.status === 400 && code === 'csrf_token_mismatch') || error?.status === 401 || error?.status === 403;
   };
 
-  override((app as any).constructor.prototype, 'requestErrorCatch', async function (this: any, original: Function, error: any, customErrorHandler: unknown) {
-    if (!looksLikeEndedSession(error) || error.options?.seamlessRefreshRetried) {
+  override(
+    (app as any).constructor.prototype,
+    'requestErrorCatch',
+    async function (this: any, original: Function, error: any, customErrorHandler: unknown) {
+      if (!looksLikeEndedSession(error) || error.options?.seamlessRefreshRetried) {
+        return original(error, customErrorHandler);
+      }
+
+      const outcome = reconcile(await askServer());
+
+      if (outcome === 'ended') {
+        return Promise.reject(error); // the notice says it once; no error alert on top
+      }
+
+      const code = error?.response?.errors?.[0]?.code;
+
+      if (outcome === 'same' && code === 'csrf_token_mismatch') {
+        // Same member, new token. Send it again: the config hook reads the
+        // token at send time, so the retry carries the fresh one.
+        error.options.seamlessRefreshRetried = true;
+
+        return m.request(error.options).catch((again: any) => original(again, customErrorHandler));
+      }
+
       return original(error, customErrorHandler);
     }
-
-    const outcome = reconcile(await askServer());
-
-    if (outcome === 'ended') {
-      return Promise.reject(error); // the notice says it once; no error alert on top
-    }
-
-    const code = error?.response?.errors?.[0]?.code;
-
-    if (outcome === 'same' && code === 'csrf_token_mismatch') {
-      // Same member, new token. Send it again: the config hook reads the
-      // token at send time, so the retry carries the fresh one.
-      error.options.seamlessRefreshRetried = true;
-
-      return m.request(error.options).catch((again: any) => original(again, customErrorHandler));
-    }
-
-    return original(error, customErrorHandler);
-  });
+  );
 
   /*
    * 5. Coming back to a tab that sat in the background, or a phone restoring a
